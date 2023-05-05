@@ -1,4 +1,4 @@
-name: Build and push Docker images to GitHub Packages
+name: Publish API client
 
 on:
   push:
