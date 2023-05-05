@@ -1,0 +1,43 @@
+name: Build and push Docker images to GitHub Packages
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGISTRY_USER: ${{ github.actor }}
+  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  publish-api-clients:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Maven settings.xml
+        uses: whelk-io/maven-settings-xml-action@v20
+        with:
+          repositories: '[{ "id": "nexus", "url": "${{ secrets.NEXUS_URL }}" }]'
+          servers: '[{ "id": "nexus", "username": "${{ secrets.NEXUS_USERNAME }}", "password": "${{ secrets.NEXUS_PASSWORD }}" }]'
+
+      - name: Build flight-scheduler app
+        run: mvn verify
+
+      - name: Generate flight-scheduler client
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          openapi-file: target/openapi.json
+          generator: java
+          command-args: "--api-package com.joranbergfeld.airport-system.flight-scheduler.client.api --model-package com.joranbergfeld.airport-system.flight-scheduler.client.model --invoker-package com.joranbergfeld.airport-system.flight-scheduler.client.invoker --group-id com.joranbergfeld.airport-system --artifact-id flight-scheduler-api.client --artifact-version ${{ github.sha }} --library resttemplate -o flight-scheduler-client"
+
+      - name: Deploy client to nexus
+        run: sed -i "/<spring-web-version>/s/>.*</>6.0.7</" pom.xml && mvn deploy -DaltDeploymentRepository=nexus::default::${{ secrets.NEXUS_URL }}

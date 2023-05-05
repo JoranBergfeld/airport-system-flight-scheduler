@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: flight-scheduler-app
+
+
+app:
+  scheduling:
+    grace-period-after-gate: 15
+  client-protocol: http
+  plane-client:
+    url: localhost
+    port: 9000
+  gate-client:
+    url: localhost
+    port: 9001
+  airliner-client:
+    url: localhost
+    port: 9002
+  flight-client:
+    url: localhost
+    port: 9003
