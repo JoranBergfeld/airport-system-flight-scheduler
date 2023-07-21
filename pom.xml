@@ -16,8 +16,12 @@
     <properties>
         <java.version>17</java.version>
         <testcontainers.version>1.17.6</testcontainers.version>
-        <api.clients.version>71ff410af41bd46dd83f5875ff897b058a7de882</api.clients.version>
+        <airliner.api.client.version>2a680455797ee6c68452cb5272113e2afdd2ab30</airliner.api.client.version>
+        <gate.api.client.version>375b7de2960379d56c54757b15b31e1b76337d66</gate.api.client.version>
+        <plane.api.client.version>4d653ce22a36e35990291aa69eba18258229ca72</plane.api.client.version>
+        <flight.api.client.version>a00e210160475bf82cb9af813a69467a0ab4ecd1</flight.api.client.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -38,13 +42,6 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -94,22 +91,22 @@
         <dependency>
             <groupId>com.joranbergfeld.airport-system</groupId>
             <artifactId>airliner-api.client</artifactId>
-            <version>${api.clients.version}</version>
+            <version>${airliner.api.client.version}</version>
         </dependency>
         <dependency>
             <groupId>com.joranbergfeld.airport-system</groupId>
             <artifactId>flight-api.client</artifactId>
-            <version>${api.clients.version}</version>
+            <version>${flight.api.client.version}</version>
         </dependency>
         <dependency>
             <groupId>com.joranbergfeld.airport-system</groupId>
             <artifactId>gate-api.client</artifactId>
-            <version>${api.clients.version}</version>
+            <version>${gate.api.client.version}</version>
         </dependency>
         <dependency>
             <groupId>com.joranbergfeld.airport-system</groupId>
             <artifactId>plane-api.client</artifactId>
-            <version>${api.clients.version}</version>
+            <version>${plane.api.client.version}</version>
         </dependency>
     </dependencies>
     <dependencyManagement>
