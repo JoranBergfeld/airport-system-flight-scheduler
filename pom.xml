@@ -154,7 +154,7 @@
                 <configuration>
                     <jvmArguments>-Dspring.application.admin.enabled=true</jvmArguments>
                     <image>
-                        <name>ghcr.io/joranbergfeld/airport-system-flight-scheduler/${project.artifactId}</name>
+                        <name>quay.io/joranbergfeld/airport-flight-scheduler/${project.artifactId}</name>
                         <publish>true</publish>
                     </image>
                     <docker>
