@@ -2,6 +2,18 @@ spring:
   application:
     name: flight-scheduler-app
 
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    liveness-state:
+      enabled: true
+    readiness-state:
+      enabled: true
+server:
+  shutdown: graceful
 
 app:
   scheduling:
