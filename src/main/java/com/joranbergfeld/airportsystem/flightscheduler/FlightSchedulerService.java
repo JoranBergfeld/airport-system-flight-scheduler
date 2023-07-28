@@ -56,6 +56,10 @@ public class FlightSchedulerService {
             return gateAvailableAt.isBefore(Instant.now());
         }).map(flight -> gates.stream().filter(gate -> Objects.equals(gate.getId(), flight.getGateId())).findFirst().get()).toList();
 
+        if (unoccupiedGates.size() < 1) {
+            throw new RuntimeException("No gates available.");
+        }
+
         Plane plane = obtainRandomPlane(planes);
         Gate gate = obtainRandomGate(unoccupiedGates);
         Airliner airliner = obtainRandomAirliner(airliners);
