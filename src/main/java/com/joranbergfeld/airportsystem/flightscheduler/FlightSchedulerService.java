@@ -27,7 +27,6 @@ public class FlightSchedulerService {
     private final PlaneControllerApi planeClient;
     private final GateControllerApi gateClient;
     private final FlightControllerApi flightClient;
-
     private final AppConfigProperties properties;
 
     private final Logger log = LoggerFactory.getLogger(FlightSchedulerService.class);
@@ -51,17 +50,13 @@ public class FlightSchedulerService {
         Collections.shuffle(planes);
         Collections.shuffle(gates);
 
-        List<Gate> unoccupiedGates = flights.stream().filter(flight -> {
-            Instant gateAvailableAt = Instant.ofEpochSecond(flight.getTaxiTime()).plus(properties.getScheduling().getGracePeriodAfterGate(), ChronoUnit.MINUTES);
-            return gateAvailableAt.isBefore(Instant.now());
-        }).map(flight -> gates.stream().filter(gate -> Objects.equals(gate.getId(), flight.getGateId())).findFirst().get()).toList();
+        Gate gate = obtainAvailableGate(flights, gates);
 
-        if (unoccupiedGates.size() < 1) {
+        if (gate == null) {
             throw new RuntimeException("No gates available.");
         }
 
         Plane plane = obtainRandomPlane(planes);
-        Gate gate = obtainRandomGate(unoccupiedGates);
         Airliner airliner = obtainRandomAirliner(airliners);
 
         log.info("Scheduling new flight at gate " + gate.getId() + ", operated by " + airliner.getName() + ", utilizing plane " + plane.getName());
@@ -76,12 +71,27 @@ public class FlightSchedulerService {
         return flightClient.createFlight(flight);
     }
 
+    private Gate obtainAvailableGate(List<Flight> flights, List<Gate> gates) {
+        for (Gate gate: gates) {
+            List<Flight> allFlightsForGateId = getAllFlightsForGateId(gate.getId(), flights);
+            // if there are no flights for this gate, it's free to be scheduled
+            if (allFlightsForGateId.size() == 0) {
+                return gate;
+            }
+            List<Flight> list = flights.stream().filter(this::determineFlightBlockingGate).toList();
+            if (list.size() == 0) {
+                return gate;
+            }
+        }
+        return null;
+    }
+
     private Airliner obtainRandomAirliner(List<Airliner> airliners) {
         try {
             Random rand = new Random();
             return airliners.get(rand.nextInt(airliners.size()));
         } catch (Exception e) {
-            throw new RuntimeException("Unable to determine random gate.", e);
+            throw new RuntimeException("Unable to determine random airliner.", e);
         }
     }
 
@@ -101,5 +111,16 @@ public class FlightSchedulerService {
         } catch (Exception e) {
             throw new RuntimeException("Unable to determine random plane.", e);
         }
+    }
+
+    private List<Flight> getAllFlightsForGateId(Long gateId, List<Flight> flights) {
+        return flights.stream().filter(flight -> Objects.equals(flight.getGateId(), gateId)).toList();
+    }
+
+    private boolean determineFlightBlockingGate(Flight flight) {
+        Instant taxiTime = Instant.ofEpochSecond(flight.getTaxiTime());
+        int gracePeriodAfterGate = properties.getScheduling().getGracePeriodAfterGate();
+        Instant gateAvailableAt = taxiTime.plus(gracePeriodAfterGate, ChronoUnit.MINUTES);
+        return gateAvailableAt.isAfter(Instant.now());
     }
 }
